@@ -1,0 +1,6 @@
+/mvp/venv/*
+/mvp/venv/
+*.csv
+*.zip
+*.txt
+*.env
