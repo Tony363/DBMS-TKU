@@ -3,5 +3,4 @@
 /solid/*
 *.csv
 *.zip
-*.txt
 *.env
