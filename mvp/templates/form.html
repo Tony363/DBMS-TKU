@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Widget</title>
+</head>
+<body>
+<form method="post">
+    <input type="string" name="table" value="table name"/>
+    <input type="string" name="col" value="column"/>
+    <input type="string" name="row" value="row"/>
+    <input type="string" name="aggregation (desc|info|value_count)" value="agg"/>
+    <input type="submit">
+</form>
+{{ result|safe }}
+
+
+</body>
+</html>
