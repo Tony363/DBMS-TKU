@@ -9,9 +9,12 @@
     <input type="string" name="table" value="table name"/>
     <input type="string" name="col" value="column"/>
     <input type="string" name="row" value="row"/>
-    <input type="string" name="aggregation (desc|info|value_count)" value="agg"/>
+    <input type="string" name="agg" value="aggregation type"/>
     <input type="submit">
+    <div class="hero-cta"><a class="button button-primary" href="/">Back</a></div>
 </form>
+{{ result1|safe }}
+{{ result2|safe }}
 {{ result|safe }}
 
 

@@ -1,5 +1,6 @@
 /mvp/venv/*
 /mvp/venv/
+/solid/*
 *.csv
 *.zip
 *.txt
