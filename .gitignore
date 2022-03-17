@@ -1,6 +1,8 @@
 /mvp/venv/*
 /mvp/venv/
 /solid/*
+*.txt
 *.csv
 *.zip
 *.env
+*.json
