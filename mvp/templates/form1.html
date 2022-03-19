@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Widget</title>
+</head>
+<body>
+
+<form method='get',action="/form/rowscols">
+    <label for="cars">Choose query params:</label>
+    <select id="tables" name="tables">
+        {% for tab in tables %}
+            <option value="{{tab}}">{{tab}}</option>
+        {% endfor %}
+      
+    </select>
+    <select id="aggs" name="aggs">
+        {% for agg in aggs %}
+            <option value="{{agg}}">{{agg}}</option>
+        {% endfor %}
+    </select>
+    <input type="submit">
+  </form>
+  <div class="hero-cta"><a class="button button-primary" href="/form">Enter new input</a></div>
+
+</body>
+</html>

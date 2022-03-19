@@ -21,15 +21,26 @@ deta = Deta(os.environ.get('key'))
 
 
 @app.get("/")
-def home(request: Request):
+async def home(request: Request):
     return templates.TemplateResponse('index.html', context={'request': request})
 
 
 @app.get("/form")
-def form_post(request: Request):
-    result1 = "Current Tables: (att_tb, deal_tb)"
-    result2 = "Available aggregations: (desc|info|value_count)"
-    return templates.TemplateResponse('form.html', context={'request': request, 'result1': result1, 'result2': result2})
+async def form_post(request: Request):
+    # tables = ['att_tb', 'deal_tb']
+    # aggs = ['info', 'value_counts', 'describe', 'sort_values']
+    tables = "Available tables: att_tb,deal_tb"
+    aggs = "Available aggregations: info,value_counts,describe,sort_values"
+    return templates.TemplateResponse('form1.html', context={'request': request, 'tables': tables, 'aggs': aggs})
+
+
+@app.get("/form/rowscols")
+async def row_cols(request: Request, table: str):
+    db = deta.Base(table)
+    result = db.fetch()
+    df = pd.DataFrame(dict(ChainMap(*result.items)))
+    shape = df.shape
+    return templates.TemplateResponse('form1.html', context={'request': request, 'columns': shape[1], 'rows': shape[0]})
 
 
 @app.post("/form")
@@ -38,12 +49,11 @@ async def read(
     table: str = Form("deal_tb"),
     col: str = Form("deal_id"),
     row: str = Form("1"),
-    agg: str = Form("agg")
+    aggs: str = Form("agg")
 ):
+    # add sorting, groupby, fuzzymatching, html drop down
     tables = ("att_tb", "deal_tb")
-    aggs = ('info', 'value_counts', 'describe')
     db, df = None, "Invalid Query"
-
     if table in tables:
         db = deta.Base(table)
 
@@ -51,35 +61,39 @@ async def read(
         q = db.get(key=col)
         if q and int(row) < len(q[col]):
             df = pd.DataFrame(q)[:int(row)]
-            return heuristics(request, df, agg, aggs)
+            return heuristics(request, df, aggs, col=col)
 
     if db and db.get(key=col):
         df = pd.DataFrame(db.get(key=col))
-        return templates.TemplateResponse('form.html', context={'request': request, 'result': df.to_html()})
+        return heuristics(request, df, aggs, col=col)
 
     if db and row.isdigit():
         result = db.fetch()
         df = pd.DataFrame(dict(ChainMap(*result.items)))
         if int(row) < df.shape[0]:
-            return templates.TemplateResponse('form.html', context={'request': request, 'result': df[:int(row)].to_html()})
+            return heuristics(request, df[:int(row)], aggs, col=col)
 
     if db:
         result = db.fetch()
         df = pd.DataFrame(dict(ChainMap(*result.items)))
-        return heuristics(request, df, agg, aggs)
+        return heuristics(request, df, aggs)
 
     return templates.TemplateResponse('form.html', context={'request': request, 'result': df})
 
 
-def heuristics(request, df, agg, aggs, buf=io.StringIO()):
+def heuristics(request, df, agg, buf=io.StringIO(), aggs=('info', 'value_counts', 'describe', 'sort_values'), col=None):
     if agg in aggs:
-        h = df.agg(agg)
+        print(col)
+        if agg == 'sort_values' and col is not None:
+            h = df.agg('sort_values', by=col)
+            return templates.TemplateResponse('form.html', context={'request': request, 'result': h.to_html()})
+        else:
+            h = df.agg(agg)
         if isinstance(h, pd.Series):
             return templates.TemplateResponse('form.html', context={'request': request, 'result': h.to_frame().to_html()})
         elif h is None:
             df.info(buf=buf)
             s = buf.getvalue()
-            print(s)
             return templates.TemplateResponse('form.html', context={'request': request, 'result': s})
         else:
             return templates.TemplateResponse('form.html', context={'request': request, 'result': h.to_html()})
