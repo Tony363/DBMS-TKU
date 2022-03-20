@@ -9,65 +9,49 @@
 <form method='post' action="/form" >
     <label for="params">Choose query params:</label>
     <select id="tables" name="tables">
-        <option value="att_tb">att_tb</option>
-        <option value="deal_tb">deal_tb</option>
-
-        <!-- {% for tab in tables %}
+        {% for tab in tables %}
             <option value="{{tab}}">{{tab}}</option>
-        {% endfor %} -->
-      
+        {% endfor %}
     </select>
     <select id="aggs" name="aggs">
-        <option value="info">info</option>
-        <option value="value_counts">value_counts</option>
-        <option value="describe">describe</option>
-        <option value="sort_values">sort_values</option>
-        <!-- {% for agg in aggs %}
+        {% for agg in aggs %}
             <option value="{{agg}}">{{agg}}</option>
-        {% endfor %} -->
+        {% endfor %}
     </select>
     <input type="submit" value="submit">
   </form>
+  <div>{{ tables|safe }}</div>
+  <div>{{ aggs|safe }}</div>
   <div class="hero-cta"><a class="button button-primary" href="/form">Enter new input</a></div>
+
+  <!-- {% for div in result %}
+    {{ div|safe }}
+  {% endfor %} -->
+  {{ agged|safe }}
+
 
 </body>
 <script>
     document.querySelector('form').addEventListener('submit', function(e) {
         e.preventDefault();
         console.log('form submitted');
+        let tablesElem = document.getElementById("tables");
+        let tables = tablesElem.options[tablesElem.selectedIndex].text;
+        let aggsElem = document.getElementById('aggs');
+        let aggs = aggsElem.options[aggsElem.selectedIndex].text;
         var form = document.querySelector('form');
-        var formData = new FormData(form);
-        const data = {tables:tables,aggs:aggs};
-        console.log("formData",formData);
-        console.log(data);
         fetch('/form', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({tables,aggs})
         })
         .then(response => response.json())
         .then(data => {
-            console.log('html success',data);
+            console.log('html success',{tables,aggs});
         })
         .catch(error => console.error('Error:', error));
     });
-
-    // function submit(){
-    //     const data = {"tables":table,"aggs":agg};
-    //     fetch('/form', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify(data)
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log(data);
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    // }
 </script>
 </html>
