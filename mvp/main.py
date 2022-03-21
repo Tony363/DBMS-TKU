@@ -37,38 +37,31 @@ async def home(request: Request):
 async def form_get(request: Request):
     tables = ['att_tb', 'deal_tb']
     aggs = ['info', 'value_counts', 'describe', 'sort_values']
-    return templates.TemplateResponse('form1.html', context={'request': request, 'tables': tables, 'aggs': aggs})
+    return templates.TemplateResponse('origin.html', context={'request': request, 'tables': tables, 'aggs': aggs})
+
+# set header no cache to inidicate dynamic  hidden page, don't load from cache, completely different html file
 
 
 @app.post("/form", response_class=HTMLResponse)
-async def form_post(request: Request):
-    r = await request.json()
-    print(r)
+async def form_post(
+    request: Request,
+    table: str = Form(None),
+    agg: str = Form(None),
+    col: str = Form(None),
+    row: str = Form(None)
+):
+    # r = await request.json()
+    # print(r)
     tables = ("att_tb", "deal_tb")
     col = None
     buf = io.StringIO()
     db, df = None, "Invalid Query"
-    if r['tables'] in tables:
-        db = deta.Base(r['tables'])
+    if table in tables:
+        db = deta.Base(table)
         result = db.fetch()
         df = pd.DataFrame(dict(ChainMap(*result.items)))
     if not isinstance(df, str):
-        aggs = ('info', 'value_counts', 'describe', 'sort_values')
-        if r['aggs'] in aggs:
-            if r['aggs'] == 'sort_values' and col is not None:
-                h = df.agg('sort_values', by=col)
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': h.to_html()})
-            else:
-                h = df.agg(r['aggs'])
-
-            if isinstance(h, pd.Series):
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': h.to_frame().to_html()})
-            elif h is None:
-                df.info(buf=buf)
-                s = buf.getvalue()
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': s})
-            else:
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': "FUCK YOU"})
+        return heuristics(request, agg, df, buf, col=col)
     return templates.TemplateResponse('form1.html', context={'request': request, 'agged': df})
 
 
@@ -92,24 +85,24 @@ async def parse_input(request: Request, table: str, agg: str):
     return heuristics(request, df, agg)
 
 
-def heuristics(request, r, df, buf=io.StringIO(), aggs=('info', 'value_counts', 'describe', 'sort_values'), col=None):
-    if r['aggs'] in aggs:
-        if r['aggs'] == 'sort_values' and col is not None:
+def heuristics(request, agg, df, buf=io.StringIO(), aggs=('info', 'value_counts', 'describe', 'sort_values'), col=None):
+    if agg in aggs:
+        if agg == 'sort_values' and col is not None:
             h = df.agg('sort_values', by=col)
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': h.to_html()})
+            return templates.TemplateResponse('origin.html', {'request': request, 'agged': h.to_html()})
         else:
-            h = df.agg(r['aggs'])
+            h = df.agg(agg)
 
         if isinstance(h, pd.Series):
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': h.to_frame().to_html()})
+            return templates.TemplateResponse('origin.html', {'request': request, 'agged': h.to_frame().to_html()})
         elif h is None:
             df.info(buf=buf)
             s = buf.getvalue()
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': s})
+            return templates.TemplateResponse('origin.html', {'request': request, 'agged': s})
         else:
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': h.to_html()})
+            return templates.TemplateResponse('origin.html', {'request': request, 'agged': h.to_html()})
 
-    return templates.TemplateResponse('form1.html', {'request': request, 'result': df.to_html()})
+    return templates.TemplateResponse('origin.html', {'request': request, 'agged': df.to_html()})
 
 
 if __name__ == '__main__':
