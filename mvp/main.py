@@ -41,12 +41,10 @@ async def form_get(request: Request):
 
 
 @app.post("/form", response_class=HTMLResponse)
-async def form_post(request: Request):
-    r = await request.json()
+def form_post(request: Request):
+    r = request.json()
     print(r)
     tables = ("att_tb", "deal_tb")
-    col = None
-    buf = io.StringIO()
     db, df = None, "Invalid Query"
     if r['tables'] in tables:
         db = deta.Base(r['tables'])
@@ -55,20 +53,7 @@ async def form_post(request: Request):
     if not isinstance(df, str):
         aggs = ('info', 'value_counts', 'describe', 'sort_values')
         if r['aggs'] in aggs:
-            if r['aggs'] == 'sort_values' and col is not None:
-                h = df.agg('sort_values', by=col)
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': h.to_html()})
-            else:
-                h = df.agg(r['aggs'])
-
-            if isinstance(h, pd.Series):
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': h.to_frame().to_html()})
-            elif h is None:
-                df.info(buf=buf)
-                s = buf.getvalue()
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': s})
-            else:
-                return templates.TemplateResponse('form1.html', {'request': request, 'agged': "FUCK YOU"})
+            return heuristics(request, r, df)
     return templates.TemplateResponse('form1.html', context={'request': request, 'agged': df})
 
 
