@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Widget</title>
+</head>
+<body>
+<form method="post">
+    <input type="string" name="table" value="table name"/>
+    <input type="string" name="agg" value="aggregation type"/>
+    <input type="submit">
+</form>
+<div>{{ tables|safe }}</div>
+<div>{{ aggs|safe }}</div>
+<div class="hero-cta"><a class="button button-primary" href="/form">reenter query</a></div>
+
+{{ agged|safe }}
+
+
+</body>
+</html>

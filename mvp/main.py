@@ -34,12 +34,14 @@ async def home(request: Request):
 
 
 @app.get("/form")
-async def form_get(request: Request):
-    tables = ['att_tb', 'deal_tb']
-    aggs = ['info', 'value_counts', 'describe', 'sort_values']
-    return templates.TemplateResponse('origin.html', context={'request': request, 'tables': tables, 'aggs': aggs})
+async def form_get(request: Request,
+                   tables=("att_tb", "deal_tb"),
+                   aggs=('info', 'value_counts', 'describe', 'sort_values'),
+                   ):
+    return templates.TemplateResponse('form.html', context={'request': request, 'tables': tables, 'aggs': aggs})
 
 # set header no cache to inidicate dynamic  hidden page, don't load from cache, completely different html file
+# sort_values, fuzzy matching, drop down
 
 
 @app.post("/form", response_class=HTMLResponse)
@@ -47,31 +49,43 @@ async def form_post(
     request: Request,
     table: str = Form(None),
     agg: str = Form(None),
-    col: str = Form(None),
-    row: str = Form(None)
+    tables=("att_tb", "deal_tb"),
+    aggs=('info', 'value_counts', 'describe', 'sort_values')
 ):
-    # r = await request.json()
-    # print(r)
-    tables = ("att_tb", "deal_tb")
-    col = None
-    buf = io.StringIO()
     db, df = None, "Invalid Query"
     if table in tables:
         db = deta.Base(table)
         result = db.fetch()
         df = pd.DataFrame(dict(ChainMap(*result.items)))
     if not isinstance(df, str):
-        return heuristics(request, agg, df, buf, col=col)
-    return templates.TemplateResponse('form1.html', context={'request': request, 'agged': df})
+        return heuristics(request, agg, table, df)
+    return templates.TemplateResponse('form.html', context={'request': request, 'tables': tables, 'aggs': aggs})
 
 
-@app.get("/form/rowscols")
-async def row_cols(request: Request, table: str):
+@app.post("/form/indexing")
+async def row_cols(
+    request: Request,
+    cols: str = Form(None),
+    rows: str = Form(None),
+    agg: str = Form(None),
+    table: str = Form(None),
+    tables=("att_tb", "deal_tb"),
+    aggs=('info', 'value_counts', 'describe', 'sort_values')
+):
+    db, df = None, "Invalid Query"
+    if table not in tables:
+        return templates.TemplateResponse('form.html', context={'request': request, 'tables': tables, 'aggs': aggs})
     db = deta.Base(table)
-    result = db.fetch()
-    df = pd.DataFrame(dict(ChainMap(*result.items)))
-    shape = df.shape
-    return templates.TemplateResponse('form1.html', context={'request': request, 'columns': shape[1], 'rows': shape[0]})
+    if db and cols:
+        df = pd.DataFrame(db.get(cols))[:int(
+            rows) if isinstance(rows, str) and rows.isdigit() else None]
+    elif db and rows:
+        df = pd.DataFrame(dict(ChainMap(*db.fetch().items)))[:int(rows)]
+    if isinstance(df, str) or df.empty:
+        result = db.fetch()
+        df = pd.DataFrame(dict(ChainMap(*result.items)))
+        return heuristics(request, agg, table, df)
+    return heuristics(request, agg, table, df, col=cols)
 
 
 @app.get("/form/?tables={table}&aggs={agg}")
@@ -85,24 +99,40 @@ async def parse_input(request: Request, table: str, agg: str):
     return heuristics(request, df, agg)
 
 
-def heuristics(request, agg, df, buf=io.StringIO(), aggs=('info', 'value_counts', 'describe', 'sort_values'), col=None):
+def heuristics(request, agg, table, df,
+               buf=io.StringIO(),
+               aggs=('info', 'value_counts', 'describe', 'sort_values'),
+               tables=("att_tb", "deal_tb"),
+               col=None):
+    context = {
+        'request': request,
+        'agged': None,
+        'columns': df.columns,
+        'rows': df.shape[0],
+        'table': table,
+        'agg': agg,
+    }
     if agg in aggs:
-        if agg == 'sort_values' and col is not None:
+        if agg == 'sort_values' and col is not None:  # TO DO check col in columns
             h = df.agg('sort_values', by=col)
-            return templates.TemplateResponse('origin.html', {'request': request, 'agged': h.to_html()})
+            context['agged'] = h.to_html()
+            return templates.TemplateResponse('form1.html', context=context)
         else:
             h = df.agg(agg)
 
         if isinstance(h, pd.Series):
-            return templates.TemplateResponse('origin.html', {'request': request, 'agged': h.to_frame().to_html()})
+            context['agged'] = h.to_frame().to_html()
+            return templates.TemplateResponse('form1.html', context=context)
         elif h is None:
             df.info(buf=buf)
             s = buf.getvalue()
-            return templates.TemplateResponse('origin.html', {'request': request, 'agged': s})
+            context['agged'] = s
+            return templates.TemplateResponse('form1.html', context=context)
         else:
-            return templates.TemplateResponse('origin.html', {'request': request, 'agged': h.to_html()})
-
-    return templates.TemplateResponse('origin.html', {'request': request, 'agged': df.to_html()})
+            context['agged'] = h.to_html()
+            return templates.TemplateResponse('form1.html', context=context)
+    context['agged'] = df.to_html()
+    return templates.TemplateResponse('form.html', context=context)
 
 
 if __name__ == '__main__':

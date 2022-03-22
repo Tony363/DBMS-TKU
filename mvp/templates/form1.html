@@ -6,32 +6,25 @@
 </head>
 <body>
 
-<form method='post' action="/form" >
-    <label for="params">Choose query params:</label>
-    <select id="tables" name="tables">
-        {% for tab in tables %}
-            <option value="{{tab}}">{{tab}}</option>
-        {% endfor %}
-    </select>
-    <select id="aggs" name="aggs">
-        {% for agg in aggs %}
-            <option value="{{agg}}">{{agg}}</option>
-        {% endfor %}
-    </select>
-    <input type="submit" value="submit">
+<form method='post' action="/form/indexing" >
+    <label for="params">Index Cols|Rows:</label>
+    <input type="string" name="cols" value="columns"/>
+    <input type="string" name="rows" value="rows"/>
+    <input type="string" name="table" value={{ table|safe }}>
+    <input type="string" name="agg" value= {{ agg|safe }}/>
+    <input type="submit">
   </form>
-  <div>{{ tables|safe }}</div>
-  <div>{{ aggs|safe }}</div>
-  <div class="hero-cta"><a class="button button-primary" href="/form">Enter new input</a></div>
+  <div>{{ columns|safe }}</div>
+  <div>{{ rows|safe }}</div>
+    <div>{{ agg|safe }}</div>
+    <div>{{ table|safe }}</div>
 
-  <!-- {% for div in result %}
-    {{ div|safe }}
-  {% endfor %} -->
+  <div class="hero-cta"><a class="button button-primary" href="/form">Enter new input</a></div>
   {{ agged|safe }}
 
 
 </body>
-<script>
+<!-- <script>
     document.querySelector('form').addEventListener('submit', function(e) {
         e.preventDefault();
         console.log('form submitted');
@@ -53,5 +46,5 @@
         })
         .catch(error => console.error('Error:', error));
     });
-</script>
+</script> -->
 </html>
