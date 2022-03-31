@@ -1,21 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Widget</title>
 </head>
+
 <body>
-<form method="post">
-    <input type="string" name="table" value="table name"/>
-    <input type="string" name="agg" value="aggregation type"/>
-    <input type="submit">
-</form>
-<div>{{ tables|safe }}</div>
-<div>{{ aggs|safe }}</div>
-<div class="hero-cta"><a class="button button-primary" href="/form">reenter query</a></div>
-
-{{ agged|safe }}
-
-
+    <form action="/form" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="choices_dropdown">Table:</label>
+            <select id="choices_dropdown" name="dropdown_choices">
+            {% if choices is string  %}
+                <option value="{{ choices }}">{{ choices }}</option>
+            {% else %}
+                {% for choice in choices %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                {% endfor %}
+            {% endif %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="choices_dropdown">Aggregation:</label>
+            <select id="choices_dropdown" name="aggs">
+            {% if aggs is string  %}
+                <option value="{{ choices }}">{{ choices }}</option>
+            {% else %}
+                {% for choice in aggs %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                {% endfor %}
+            {% endif %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="choices_dropdown">Columns:</label>
+            <select id="columns" name="columns">
+            {% if columns %}
+                {% for choice in columns %}
+                <option value={{choice}}>{{choice}}</option>
+                <!-- The choices are correctly displayed in the dropdown menu -->
+                {% endfor %}
+            {% else %}
+                <option value={{None}}>{{None}}</option>
+            {% endif %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="choices_dropdown">Rows:</label>
+            <select id="rows" name="rows">
+            {% if rows %}
+                {% for choice in rows %}
+                <option value={{choice}}>{{choice}}</option>
+                <!-- The choices are correctly displayed in the dropdown menu -->
+                {% endfor %}
+            {% else %}
+                <option value={{None}}>{{None}}</option>
+            {% endif %}
+            </select>
+        </div>
+        <div>
+            <button id="Query" type='submit' class="btn btn-primary">Query</button>
+        </div>
+        <div>
+            <button id="Clear" type='submit' class="btn btn-primary" action="/">Clear</button>
+        </div>
+        <!-- More form actions including file upload and checkbox. These work. -->
+        <!-- <div class="form-group">
+        <label for="upload_file">Choose Upload File:</label>
+        <input type="file" class="form-control-file" name='upload_file' id="upload_file">
+        <input class="form-check-input" type="checkbox" name='overwrite_existing' id="flexCheckChecked"> Overwrite existing
+    </div> -->
+        <div>
+            {{ info|safe }}
+        </div>
+        <div>
+            {{ frame|safe }}
+        </div>
+    </form>
 </body>
+
 </html>

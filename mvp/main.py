@@ -1,14 +1,18 @@
 import os
-import io
+import sqlite3
 import pandas as pd
 import numpy as np
+
 from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.encoders import jsonable_encoder
+
 from deta import Deta
 from dotenv import load_dotenv
+
+from enum import Enum
 from collections import ChainMap
 from pydantic import BaseModel
 from typing import Optional
@@ -23,117 +27,83 @@ templates = Jinja2Templates("templates")
 deta = Deta(os.environ.get('key'))
 
 
-class data(BaseModel):
-    table: Optional[str] = None
-    aggregration: Optional[str] = None
-
-
 @app.get("/")
 async def home(request: Request):
     return templates.TemplateResponse('index.html', context={'request': request})
 
 
-@app.get("/form")
-async def form_get(request: Request,
-                   tables=("att_tb", "deal_tb"),
-                   aggs=('info', 'value_counts', 'describe', 'sort_values'),
-                   ):
-    return templates.TemplateResponse('form.html', context={'request': request, 'tables': tables, 'aggs': aggs})
-
-# set header no cache to inidicate dynamic  hidden page, don't load from cache, completely different html file
-# sort_values, fuzzy matching, drop down
+class dropdownChoices(str, Enum):
+    att_tb = 'att_tb'
+    deal_tb = 'deal_tb'
 
 
-@app.post("/form", response_class=HTMLResponse)
-async def form_post(
-    request: Request,
-    table: str = Form(None),
-    agg: str = Form(None),
-    tables=("att_tb", "deal_tb"),
-    aggs=('info', 'value_counts', 'describe', 'sort_values')
-):
-    db, df = None, "Invalid Query"
-    if table in tables:
-        db = deta.Base(table)
-        result = db.fetch()
-        df = pd.DataFrame(dict(ChainMap(*result.items)))
-    if not isinstance(df, str):
-        return heuristics(request, agg, table, df)
-    return templates.TemplateResponse('form.html', context={'request': request, 'tables': tables, 'aggs': aggs})
+class aggregations(str, Enum):
+    default = 'None'
+    sort = 'sort_values'
+    # mean = 'mean'
+    # median = 'median'
+    # max = 'max'
+    # min = 'min'
+    # sum = 'sum'
+    # count = 'count'
+    # std = 'std'
+    # var = 'var'
 
 
-@app.post("/form/indexing")
-async def row_cols(
-    request: Request,
-    cols: str = Form(None),
-    rows: str = Form(None),
-    agg: str = Form(None),
-    table: str = Form(None),
-    tables=("att_tb", "deal_tb"),
-    aggs=('info', 'value_counts', 'describe', 'sort_values')
-):
-    db, df = None, "Invalid Query"
-    if table not in tables:
-        return templates.TemplateResponse('form.html', context={'request': request, 'tables': tables, 'aggs': aggs})
-    db = deta.Base(table)
-    if db and cols:
-        df = pd.DataFrame(db.get(cols))[:int(
-            rows) if isinstance(rows, str) and rows.isdigit() else None]
-    elif db and rows:
-        df = pd.DataFrame(dict(ChainMap(*db.fetch().items)))[:int(rows)]
-    if isinstance(df, str) or df.empty:
-        result = db.fetch()
-        df = pd.DataFrame(dict(ChainMap(*result.items)))
-        return heuristics(request, agg, table, df)
-    return heuristics(request, agg, table, df, col=cols)
+@app.get('/form')
+async def upload(request: Request):
+    return templates.TemplateResponse(
+        'form.html', context={
+            'request': request,
+            'choices': tuple(e.value for e in dropdownChoices),
+            'aggs': tuple(e.value for e in aggregations),
+            'frame': None,
+            'columns': None,
+            'rows': None})
 
 
-@app.get("/form/?tables={table}&aggs={agg}")
-async def parse_input(request: Request, table: str, agg: str):
-    if table in ('att_tb', 'deal_tb'):
-        db = deta.Base(table)
-    else:
-        return templates.TemplateResponse('form1.html', context={'request': request, 'result': "Table not found"})
-    result = db.fetch()
-    df = pd.DataFrame(dict(ChainMap(*result.items)))
-    return heuristics(request, df, agg)
+@app.post("/form")
+async def handle_form(request: Request,
+                      dropdown_choices: dropdownChoices = Form(None),
+                      columns: str = Form(None),
+                      rows: str = Form(None),
+                      aggs: str = Form(None),):
+    print(f"col row {columns} {rows}")
+    print(f"AGG {aggs}")
+    conn = sqlite3.connect('mvp.db')
+    info = pd.read_sql("Pragma table_info(%s)" % dropdown_choices.value, conn)
+    df = pd.read_sql("select * from %s" %
+                     dropdown_choices.value, conn)
+    conn.close()
 
-
-def heuristics(request, agg, table, df,
-               buf=io.StringIO(),
-               aggs=('info', 'value_counts', 'describe', 'sort_values'),
-               tables=("att_tb", "deal_tb"),
-               col=None):
-    context = {
-        'request': request,
-        'agged': None,
-        'columns': df.columns,
-        'rows': df.shape[0],
-        'table': table,
-        'agg': agg,
-    }
-    if agg in aggs:
-        if agg == 'sort_values' and col is not None:  # TO DO check col in columns
-            h = df.agg('sort_values', by=col)
-            context['agged'] = h.to_html()
-            return templates.TemplateResponse('form1.html', context=context)
-        else:
-            h = df.agg(agg)
-
-        if isinstance(h, pd.Series):
-            context['agged'] = h.to_frame().to_html()
-            return templates.TemplateResponse('form1.html', context=context)
-        elif h is None:
-            df.info(buf=buf)
-            s = buf.getvalue()
-            context['agged'] = s
-            return templates.TemplateResponse('form1.html', context=context)
-        else:
-            context['agged'] = h.to_html()
-            return templates.TemplateResponse('form1.html', context=context)
-    context['agged'] = df.to_html()
-    return templates.TemplateResponse('form.html', context=context)
+    if columns != 'None' and rows != 'None':
+        if aggs == 'sort_values':
+            df = df.agg(aggs, by=columns)
+            return templates.TemplateResponse("form.html", context={
+                'request': request,
+                'choices': dropdown_choices.value,
+                'aggs': tuple(e.value for e in aggregations),
+                'frame': df.to_html(),
+                'columns': df.columns.to_list(),
+                'rows': df.index.to_list()})
+        return templates.TemplateResponse('form.html', context={
+            'request': request,
+            'choices': dropdown_choices.value,
+            'aggs': tuple(e.value for e in aggregations),
+            'frame': df[columns].head(int(rows)).to_frame().to_html(),
+            'columns': df.columns.to_list(),
+            'rows': df.index.to_list()})
+    return templates.TemplateResponse('form.html', context={'request': request,
+                                                            'choices': dropdown_choices.value,
+                                                            'aggs': tuple(e.value for e in aggregations),
+                                                            'info': info.to_html(),
+                                                            'columns': df.columns.to_list(),
+                                                            'rows': df.index.to_list()})
 
 
 if __name__ == '__main__':
+    """
+    # set header no cache to inidicate dynamic  hidden page, don't load from cache, completely different html file
+    #  fuzzy matching,
+    """
     pass
