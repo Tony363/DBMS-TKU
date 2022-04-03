@@ -1,0 +1,16 @@
+h1 {
+    background-color: yellow;
+    color: green;
+}
+
+.italic_item {
+    font-style: italic;
+}
+
+#specific {
+    font-weight: bold;
+}
+
+body {
+    background-color: lightgray;
+}

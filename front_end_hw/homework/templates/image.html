@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Images and Image map</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <h2>You can add pictures and gif in html</h2>
+        <img src="picexample.jpg" alt="picexample">
+        <img src="gifexample.gif" alt="gifexample">
+        <h2>and you can define an image map</h2>
+        <p>Click on the rectangle, circle and triangle to go to the new page and read more about the topic:</p>
+        <img src="pic.png" alt="pic" usemap="#graphic" width="886" height="462">
+        <map name="graphic">
+            <area shape="rect" coords="145,56,342,190" alt="rectangle" href="https://zh.wikipedia.org/zh-tw/%E7%9F%A9%E5%BD%A2">
+            <area shape="circle" coords="628, 193, 96" alt="cricle" href="https://zh.wikipedia.org/zh-tw/%E5%9C%86">
+            <area shape="poly" coords="232,253,421,415,232,414" alt="triangle" href="https://zh.wikipedia.org/wiki/%E7%9B%B4%E8%A7%92%E4%B8%89%E8%A7%92%E5%BD%A2">
+        </map>
+    </body>
+</html>
