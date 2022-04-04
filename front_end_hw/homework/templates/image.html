@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<header class="c-header">
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <h1 title="hope we can teach you something lol">Images and image map tutorial</h1>
+    <meta charset="utf-8">
+    <p>レムまじ天使</p>
+    <p>
+        <a class="c-btn" onclick="location.href = '../Main.html'" target="_blank">Home Page</a>
+    </p>
+</header>
+
+
+
+<body>
+    <section class="c-posts">
+        <article class="c-posts__item">
+            <h2>レムまじ天使</h2>
+            <img src="../images/picexample.jpg" alt="picexample">
+
+        </article>
+        <article class="c-posts__item">
+            <h2>You can add pictures and gif in html</h2>
+            <p>and you can define an image map</p>
+            <img src="../images/gifexample.gif" alt="gifexample">
+
+        </article>
+        <article class="c-posts__item">
+            <img src="../images/pic.png" alt="pic" usemap="#graphic" width="886" height="462">
+        </article>
+        <article class="c-posts__item">
+            <p>Click on the rectangle, circle and triangle to go to the new page and read more about the topic:</p>
+            <map name="graphic">
+                <area shape="rect" coords="145,56,342,190" alt="rectangle" href="https://zh.wikipedia.org/zh-tw/%E7%9F%A9%E5%BD%A2">
+                <area shape="circle" coords="628, 193, 96" alt="cricle" href="https://zh.wikipedia.org/zh-tw/%E5%9C%86">
+                <area shape="poly" coords="232,253,421,415,232,414" alt="triangle" href="https://zh.wikipedia.org/wiki/%E7%9B%B4%E8%A7%92%E4%B8%89%E8%A7%92%E5%BD%A2">
+            </map>
+
+        </article>
+
+    </section>
+    <footer class="c-footer">
+        <p>
+            <a class="c-btn" onclick="location.href = '../Main.html'" target="_blank">Home Page</a>
+        </p>
+    </footer>
+</body>
+
+
+</html>

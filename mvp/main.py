@@ -1,14 +1,18 @@
 import os
-import io
+import sqlite3
 import pandas as pd
 import numpy as np
+
 from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.encoders import jsonable_encoder
+
 from deta import Deta
 from dotenv import load_dotenv
+
+from enum import Enum
 from collections import ChainMap
 from pydantic import BaseModel
 from typing import Optional
@@ -23,79 +27,83 @@ templates = Jinja2Templates("templates")
 deta = Deta(os.environ.get('key'))
 
 
-class data(BaseModel):
-    table: Optional[str] = None
-    aggregration: Optional[str] = None
-
-
 @app.get("/")
 async def home(request: Request):
     return templates.TemplateResponse('index.html', context={'request': request})
 
 
-@app.get("/form")
-async def form_get(request: Request):
-    tables = ['att_tb', 'deal_tb']
-    aggs = ['info', 'value_counts', 'describe', 'sort_values']
-    return templates.TemplateResponse('form1.html', context={'request': request, 'tables': tables, 'aggs': aggs})
+class dropdownChoices(str, Enum):
+    att_tb = 'att_tb'
+    deal_tb = 'deal_tb'
 
 
-@app.post("/form", response_class=HTMLResponse)
-def form_post(request: Request):
-    r = request.json()
-    print(r)
-    tables = ("att_tb", "deal_tb")
-    db, df = None, "Invalid Query"
-    if r['tables'] in tables:
-        db = deta.Base(r['tables'])
-        result = db.fetch()
-        df = pd.DataFrame(dict(ChainMap(*result.items)))
-    if not isinstance(df, str):
-        aggs = ('info', 'value_counts', 'describe', 'sort_values')
-        if r['aggs'] in aggs:
-            return heuristics(request, r, df)
-    return templates.TemplateResponse('form1.html', context={'request': request, 'agged': df})
+class aggregations(str, Enum):
+    default = 'None'
+    sort = 'sort_values'
+    # mean = 'mean'
+    # median = 'median'
+    # max = 'max'
+    # min = 'min'
+    # sum = 'sum'
+    # count = 'count'
+    # std = 'std'
+    # var = 'var'
 
 
-@app.get("/form/rowscols")
-async def row_cols(request: Request, table: str):
-    db = deta.Base(table)
-    result = db.fetch()
-    df = pd.DataFrame(dict(ChainMap(*result.items)))
-    shape = df.shape
-    return templates.TemplateResponse('form1.html', context={'request': request, 'columns': shape[1], 'rows': shape[0]})
+@app.get('/form')
+async def upload(request: Request):
+    return templates.TemplateResponse(
+        'form.html', context={
+            'request': request,
+            'choices': tuple(e.value for e in dropdownChoices),
+            'aggs': tuple(e.value for e in aggregations),
+            'frame': None,
+            'columns': None,
+            'rows': None})
 
 
-@app.get("/form/?tables={table}&aggs={agg}")
-async def parse_input(request: Request, table: str, agg: str):
-    if table in ('att_tb', 'deal_tb'):
-        db = deta.Base(table)
-    else:
-        return templates.TemplateResponse('form1.html', context={'request': request, 'result': "Table not found"})
-    result = db.fetch()
-    df = pd.DataFrame(dict(ChainMap(*result.items)))
-    return heuristics(request, df, agg)
+@app.post("/form")
+async def handle_form(request: Request,
+                      dropdown_choices: dropdownChoices = Form(None),
+                      columns: str = Form(None),
+                      rows: str = Form(None),
+                      aggs: str = Form(None),):
+    print(f"col row {columns} {rows}")
+    print(f"AGG {aggs}")
+    conn = sqlite3.connect('mvp.db')
+    info = pd.read_sql("Pragma table_info(%s)" % dropdown_choices.value, conn)
+    df = pd.read_sql("select * from %s" %
+                     dropdown_choices.value, conn)
+    conn.close()
 
-
-def heuristics(request, r, df, buf=io.StringIO(), aggs=('info', 'value_counts', 'describe', 'sort_values'), col=None):
-    if r['aggs'] in aggs:
-        if r['aggs'] == 'sort_values' and col is not None:
-            h = df.agg('sort_values', by=col)
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': h.to_html()})
-        else:
-            h = df.agg(r['aggs'])
-
-        if isinstance(h, pd.Series):
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': h.to_frame().to_html()})
-        elif h is None:
-            df.info(buf=buf)
-            s = buf.getvalue()
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': s})
-        else:
-            return templates.TemplateResponse('form1.html', {'request': request, 'result': h.to_html()})
-
-    return templates.TemplateResponse('form1.html', {'request': request, 'result': df.to_html()})
+    if columns != 'None' and rows != 'None':
+        if aggs == 'sort_values':
+            df = df.agg(aggs, by=columns)
+            return templates.TemplateResponse("form.html", context={
+                'request': request,
+                'choices': dropdown_choices.value,
+                'aggs': tuple(e.value for e in aggregations),
+                'frame': df.to_html(),
+                'columns': df.columns.to_list(),
+                'rows': df.index.to_list()})
+        return templates.TemplateResponse('form.html', context={
+            'request': request,
+            'choices': dropdown_choices.value,
+            'aggs': tuple(e.value for e in aggregations),
+            'frame': df[columns].head(int(rows)).to_frame().to_html(),
+            'columns': df.columns.to_list(),
+            'rows': df.index.to_list()})
+    return templates.TemplateResponse('form.html', context={'request': request,
+                                                            'choices': dropdown_choices.value,
+                                                            'aggs': tuple(e.value for e in aggregations),
+                                                            'info': info.to_html(),
+                                                            'columns': df.columns.to_list(),
+                                                            'rows': df.index.to_list()})
 
 
 if __name__ == '__main__':
+    """
+    # set header no cache to inidicate dynamic  hidden page, don't load from cache, completely different html file
+    #  fuzzy matching,
+    """
     pass

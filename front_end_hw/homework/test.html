@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+    <script type="" src="">
+        // window.onclick = () => { // const heading = document.createElement("h2"); // const heading_text = document.createTextNode("Javascript generated html"); // heading.appendChild(heading_text); // document.body.appendChild(heading); // } function startup()
+        { const heading = document.createElement("h2"); const heading_text = document.createTextNode("Javascript generated html"); heading.appendChild(heading_text); document.body.appendChild(heading); }
+    </script>
+    <link rel="stylesheet" href="main.css">
+
+    <style>
+        h1 {
+            background-color: yellow;
+            color: green;
+        }
+        
+        .italic_item {
+            font-style: italic;
+        }
+        
+        #specific {
+            font-weight: bold;
+        }
+    </style>
+    <title>TEST </title>
+    <meta charset="UTF-8" />
+</head>
+
+<body onload="append_h2('on load');">
+    <h1 style="color:red;background-color:white">The heading</h1>
+    <p class="italic_item">
+        This is the first paragraph.
+    </p>
+    <ol>
+        <li>
+            item 1
+        </li>
+        <li id="specific">
+            item 2
+        </li>
+        <li>
+            item 3
+        </li>
+        <li>
+            item 4
+        </li>
+        <h1 class="italic_item">The second heading</h1>
+    </ol>
+    <script>
+        function append_h2(value) {
+            const heading = document.createElement("h2");
+            const heading_text = document.createTextNode(value);
+            heading.appendChild(heading_text);
+            document.body.appendChild(heading);
+        }
+        append_h2("before onload");
+    </script>
+</body>
+
+
+</html>

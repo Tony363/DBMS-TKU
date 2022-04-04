@@ -7,3 +7,5 @@ key.txt
 *.zip
 *.env
 *.json
+__pycache__
+__pycache__/*
