@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="ISO-8859-1">
+    <title>blockandinline.html</title>
+    <link rel="stylesheet" type="text/css" href="highlight.css">
+</head>
+
+<body class="hl">
+    <pre class="hl"><span class="hl kwa">&lt;!DOCTYPE</span> html<span class="hl kwa">&gt;</span>
+<span class="hl kwa">&lt;html&gt;</span>
+
+
+<span class="hl kwa">&lt;header</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-header&quot;</span><span class="hl kwa">&gt;</span>
+    <span class="hl kwa">&lt;link</span> <span class="hl kwb">rel</span>=<span class="hl str">&quot;stylesheet&quot;</span> <span class="hl kwb">type</span>=<span class="hl str">&quot;text/css&quot;</span> <span class="hl kwb">href</span>=<span class="hl str">&quot;../css/style.css&quot;</span> <span class="hl kwa">/&gt;</span>
+    <span class="hl kwa">&lt;h1</span> <span class="hl kwb">title</span>=<span class="hl str">&quot;hope we can teach you something lol&quot;</span><span class="hl kwa">&gt;</span>Block &amp; inline<span class="hl kwa">&lt;/h1&gt;</span>
+    <span class="hl kwa">&lt;meta</span> <span class="hl kwb">charset</span>=<span class="hl str">&quot;utf-8&quot;</span><span class="hl kwa">&gt;</span>
+    <span class="hl kwa">&lt;p&gt;</span>
+        <span class="hl kwa">&lt;a</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-btn&quot;</span> <span class="hl kwb">onclick</span>=<span class="hl str">&quot;location.href = &apos;../index.html&apos;&quot;</span> <span class="hl kwb">target</span>=<span class="hl str">&quot;_blank&quot;</span><span class="hl kwa">&gt;</span>Home Page<span class="hl kwa">&lt;/a&gt;</span>
+    <span class="hl kwa">&lt;/p&gt;</span>
+<span class="hl kwa">&lt;/header&gt;</span>
+
+<span class="hl kwa">&lt;body&gt;</span>
+    <span class="hl kwa">&lt;section</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-posts&quot;</span><span class="hl kwa">&gt;</span>
+        <span class="hl kwa">&lt;article</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-posts__item&quot;</span><span class="hl kwa">&gt;</span>
+            <span class="hl kwa">&lt;h2&gt;</span>BLOCK<span class="hl kwa">&lt;/h2&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>Block elements are alsways starts on a new line and the browsers automatically add some space (a margin) before and after the element.<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>For example p tag and div tag<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;p</span> <span class="hl kwb">style</span>=<span class="hl str">&quot;border: 1px solid black&quot;</span><span class="hl kwa">&gt;</span>This is p tag<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;div</span> <span class="hl kwb">style</span>=<span class="hl str">&quot;border: 1px solid black&quot;</span><span class="hl kwa">&gt;</span>This is div tag<span class="hl kwa">&lt;/div&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>Both of them are block element and they will take up the full width available<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>When use together with CSS, the div tag can be used to style blocks of content:<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;div</span> <span class="hl kwb">style</span>=<span class="hl str">&quot;background-color:lightblue;color:black;padding:20px;&quot;</span><span class="hl kwa">&gt;</span>
+                <span class="hl kwa">&lt;h3&gt;</span>div example<span class="hl kwa">&lt;/h3&gt;</span>
+                <span class="hl kwa">&lt;p&gt;</span>This is a block content.<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;/div&gt;</span>
+        <span class="hl kwa">&lt;/article&gt;</span>
+        <span class="hl kwa">&lt;article</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-posts__item&quot;</span><span class="hl kwa">&gt;</span>
+            <span class="hl kwa">&lt;hr&gt;</span>
+            <span class="hl kwa">&lt;h1&gt;</span>INLINE<span class="hl kwa">&lt;/h1&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>Inline element doesn&apos;t start on a new line and only takes up as much width as necessary<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>For example span tag<span class="hl kwa">&lt;/p&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>This is a p tag example with a <span class="hl kwa">&lt;span</span> <span class="hl kwb">style</span>=<span class="hl str">&quot;color:red;&quot;</span><span class="hl kwa">&gt;</span>span tag<span class="hl kwa">&lt;/span&gt;</span> inside!<span class="hl kwa">&lt;/p&gt;</span>
+        <span class="hl kwa">&lt;/article&gt;</span>
+
+        <span class="hl kwa">&lt;article</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-posts__item&quot;</span><span class="hl kwa">&gt;</span>
+            <span class="hl kwa">&lt;h2&gt;</span>Block Elements<span class="hl kwa">&lt;/h2&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>They consume the entire width available irrespective of their sufficiency. They always start in a new line and have top and bottom margins. It does not contain any other elements next to it.<span class="hl kwa">&lt;/p&gt;</span>
+        <span class="hl kwa">&lt;/article&gt;</span>
+        <span class="hl kwa">&lt;article</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-posts__item&quot;</span><span class="hl kwa">&gt;</span>
+            <span class="hl kwa">&lt;h2&gt;</span>Inline Elements<span class="hl kwa">&lt;/h2&gt;</span>
+            <span class="hl kwa">&lt;p&gt;</span>Inline elements occupy only enough width that is sufficient to it and allows other elements next to it which are inline. Inline elements don’t start from a new line and don’t have top and bottom margins as block elements have.<span class="hl kwa">&lt;/p&gt;</span>
+        <span class="hl kwa">&lt;/article&gt;</span>
+    <span class="hl kwa">&lt;/section&gt;</span>
+
+    <span class="hl kwa">&lt;footer</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-footer&quot;</span><span class="hl kwa">&gt;</span>
+        <span class="hl kwa">&lt;p&gt;</span>
+            <span class="hl kwa">&lt;a</span> <span class="hl kwb">class</span>=<span class="hl str">&quot;c-btn&quot;</span> <span class="hl kwb">href</span>=<span class="hl str">&quot;https://www.geeksforgeeks.org/difference-between-block-elements-and-inline-elements/&quot;</span> <span class="hl kwb">target</span>=<span class="hl str">&quot;_blank&quot;</span><span class="hl kwa">&gt;</span>Read More<span class="hl kwa">&lt;/a&gt;</span>
+        <span class="hl kwa">&lt;/p&gt;</span>
+    <span class="hl kwa">&lt;/footer&gt;</span>
+<span class="hl kwa">&lt;/body&gt;</span>
+
+
+<span class="hl kwa">&lt;/html&gt;</span>
+</pre>
+</body>
+
+</html>
+<!--HTML generated by highlight 3.41, http://www.andre-simon.de/-->
