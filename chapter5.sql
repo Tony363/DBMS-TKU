@@ -481,6 +481,7 @@ GROUP BY ProductFinish
 HAVING avg(ProductStandardPrice) < 750
 ORDER BY ProductFinish;
 
+--multiple joins
 SELECT * 
 FROM Customer_T 
 INNER JOIN Order_T
@@ -491,7 +492,23 @@ INNER JOIN Product_T
     ON OrderLine_T.ProductID = Product_T.ProductID
 WHERE Order_T.OrderID = 1006;
 
-SELECT * 
+
+--self join
+SELECT e.EmployeeID,e.EmployeeName,m.EmployeeName AS Manager
+FROM Employee_T e, Employee_T m
+    WHERE e.EmployeeSupervisor = m.EmployeeID
+
+--Nocorrelated subquery
+SELECT CustomerName,CustomerAddress,CustomerCity,CustomerState
+FROM Customer_T
+    WHERE Customer_T.CustomerID = (
+        SELECT Order_T.CustomerID 
+        FROM Order_T
+            WHERE OrderID = 1008
+    );
+
+--without subquery, using join
+SELECT CustomerName,CustomerAddress,CustomerCity,CustomerState
 FROM Customer_T
 INNER JOIN Order_T
     ON Customer_T.CustomerID = Order_T.CustomerID
@@ -506,14 +523,15 @@ WHERE ProductFinish = 'Natural Ash';
 
 SELECT pa.ProductDescription,pa.ProductFinish,max(pa.ProductStandardPrice)
 FROM Product_T  AS pa;
---  where PA.ProductStandardPrice >  (
---     select ProductStandardPrice from Product_T PB
---         where PB.ProductID != PA.ProductID)
---  );
-         
- SELECT DISTINCT OrderID
- FROM OrderLine_T
- WHERE EXISTS
+
+--  select ProductDescription,ProductFinish,ProductStandardPricefrom from Product_T  pa
+--  where pa.ProductstandardPrice > all 
+--     (select ProductStandardPrice from Product_T  pb
+--         where pb.ProductID != pa.ProductID);
+ 
+ --another correlated subquery
+SELECT DISTINCT OrderID FROM OrderLine_T
+WHERE EXISTS
     (SELECT * 
     FROM Product_T
         WHERE productID = OrderLine_T.ProductID
